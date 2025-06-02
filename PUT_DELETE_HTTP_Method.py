@@ -64,7 +64,23 @@ def patient_edit(patient_id : str , patient_data_update :Patient_update):
         return HTTPException(status_code= 400 , detail="Patient id not exist in db")
     
     patient_data = all_data[patient_id]
+    patient_data_update = patient_data_update.model_dump(exclude_unset= True)
+
+    for k , v in patient_data_update.items():
+      patient_data[k] = v  
+
+    patient_data["id"] = patient_id
+    p_obj = Patient(**patient_data)
+    patient_data = p_obj.model_dump(exclude= 'id')
+
+    all_data[patient_id] = patient_data
+
+    save_data(all_data)
+
+    return JSONResponse(status_code= 200 , content={"message" : {"updation of data is sucessfull"}})
+
     
+
 
 
 
