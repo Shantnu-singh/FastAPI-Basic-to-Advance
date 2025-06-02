@@ -1,6 +1,6 @@
 from fastapi import FastAPI , Path , HTTPException , Query
 from pydantic import BaseModel , computed_field , Field
-from typing import Annotated , Literal
+from typing import Annotated , Literal , Optional
 from fastapi.responses import JSONResponse
 
 import json  
@@ -37,6 +37,16 @@ class Patient(BaseModel):
         else:
             return "Obese"
         
+class Patient_update(BaseModel):
+    name: Optional[str]
+    city: Optional[str]
+    age: Annotated[int , Field(gt = 0 , lt = 100 , description= 'Age of the patient')]
+    gender: Annotated[Optional[Literal['male' , 'female' , 'others']] , Field(... , description= 'Details about patient gender')]
+    height: Optional[float]
+    weight: Optional[float]
+    bmi : Optional[float]
+    verdict : Optional[str]
+         
 def get_data():
     with open("Data\patient.json", "r") as file:
         data = json.load(file)
@@ -45,6 +55,18 @@ def get_data():
 def save_data(data):
     with open("Data\patient.json", "w") as file:
         json.dump(data , file)
+
+@app.put("/edit/{patient_id}")
+def patient_edit(patient_id : str , patient_data_update :Patient_update):
+    all_data = get_data()
+
+    if patient_id not in all_data:
+        return HTTPException(status_code= 400 , detail="Patient id not exist in db")
+    
+    patient_data = all_data[patient_id]
+    
+
+
 
 @app.post('/create')
 def create_patient(patient_data : Patient):
