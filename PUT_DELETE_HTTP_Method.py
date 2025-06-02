@@ -5,6 +5,9 @@ from fastapi.responses import JSONResponse
 
 import json  
 
+# Create on more pydentic model
+
+
 app = FastAPI()
 
 class Patient(BaseModel):
