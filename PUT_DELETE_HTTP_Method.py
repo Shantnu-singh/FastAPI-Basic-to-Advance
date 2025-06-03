@@ -80,6 +80,17 @@ def patient_edit(patient_id : str , patient_data_update :Patient_update):
 
     return JSONResponse(status_code= 200 , content={"message" : "updation of data is sucessfull"})
 
+@app.delete("/delete/{patient_id}")
+def delete_patient(patient_id):
+    all_data  = get_data()
+    if patient_id not in all_data:
+        raise HTTPException(status_code= 400 , detail="Patient id not exist in db")
+    
+    filter_data = {k:v for k , v in all_data.items() if k != patient_id}
+    save_data(filter_data)
+
+    return JSONResponse(status_code= 200 , content={"message" : "Deletion of data is sucessfull"})
+
 
 @app.post('/create')
 def create_patient(patient_data : Patient):
