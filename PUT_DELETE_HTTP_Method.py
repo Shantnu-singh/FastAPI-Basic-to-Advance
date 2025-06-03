@@ -4,6 +4,7 @@ from typing import Annotated , Literal , Optional
 from fastapi.responses import JSONResponse
 
 import json  
+import os
 
 # Create on more pydentic model
 
@@ -38,22 +39,21 @@ class Patient(BaseModel):
             return "Obese"
         
 class Patient_update(BaseModel):
-    name: Optional[str]
-    city: Optional[str]
-    age: Annotated[int , Field(gt = 0 , lt = 100 , description= 'Age of the patient')]
-    gender: Annotated[Optional[Literal['male' , 'female' , 'others']] , Field(... , description= 'Details about patient gender')]
-    height: Optional[float]
-    weight: Optional[float]
-    bmi : Optional[float]
-    verdict : Optional[str]
+    name: Optional[str] = Field(default=None)
+    city: Optional[str] = Field(default=None)
+    age: Optional[Annotated[int, Field(gt=0, lt=100)]] = Field(default=None)
+    gender: Optional[Literal['male', 'female', 'others']] = Field(default=None)
+    height: Optional[float] = Field(default=None)
+    weight: Optional[float] = Field(default=None)
          
 def get_data():
-    with open("Data\patient.json", "r") as file:
+    with open("Data/patient.json", "r") as file:
         data = json.load(file)
     return data
 
+DATA_FILE = os.path.join(os.path.dirname(__file__), "Data", "patient.json")
 def save_data(data):
-    with open("Data\patient.json", "w") as file:
+    with open(DATA_FILE, "w") as file:
         json.dump(data , file)
 
 @app.put("/edit/{patient_id}")
@@ -61,7 +61,7 @@ def patient_edit(patient_id : str , patient_data_update :Patient_update):
     all_data = get_data()
 
     if patient_id not in all_data:
-        return HTTPException(status_code= 400 , detail="Patient id not exist in db")
+        raise HTTPException(status_code= 400 , detail="Patient id not exist in db")
     
     patient_data = all_data[patient_id]
     patient_data_update = patient_data_update.model_dump(exclude_unset= True)
@@ -71,17 +71,14 @@ def patient_edit(patient_id : str , patient_data_update :Patient_update):
 
     patient_data["id"] = patient_id
     p_obj = Patient(**patient_data)
-    patient_data = p_obj.model_dump(exclude= 'id')
+    patient_data = p_obj.model_dump(exclude= {'id'})
 
     all_data[patient_id] = patient_data
+    print(all_data)
 
     save_data(all_data)
 
-    return JSONResponse(status_code= 200 , content={"message" : {"updation of data is sucessfull"}})
-
-    
-
-
+    return JSONResponse(status_code= 200 , content={"message" : "updation of data is sucessfull"})
 
 
 @app.post('/create')
