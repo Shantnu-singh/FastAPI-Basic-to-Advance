@@ -1,4 +1,4 @@
-from pydantic import BaseModel , EmailStr , AnyUrl , Field , field_validator
+from pydantic import BaseModel , EmailStr , AnyUrl , Field , field_validator , model_validator
 from typing import List , Dict , Optional , Annotated 
 
 # class Patient(BaseModel):
@@ -51,14 +51,32 @@ class Patient_hdfc(BaseModel):
 
         return value
     
-    @field_validator('name')
+    @field_validator('name') # Mode -> before and after
     @classmethod
     def transform_name(cls ,value ):
         return value.upper()
+    
+    @field_validator('age' , mode = 'after') # before will not work as 
+    @classmethod
+    def validate_age_range(cls , value):
+        if 0 < value < 100:
+            return value
+        else:
+            raise ValueError("Age needs to be correct")
+        
+    # Data validation on multiple fields
+    @model_validator(mode= "after")
+    @classmethod
+    def validate_age_emergency_contact(cls , model):
+        if model.age > 60 and "emergency" not in model.contact_details:
+            raise ValueError("Can't create a patient with age > 60 and no emegency contact")
+        else:
+            return model
+
 
     
 
 
-p_data_new = {"name" : "shantnu" , "age" : 30 ,'email' : 'shans@hdfc.com', 'linkedin_url' :"https://shan.com/about" , "weight" : 70.34 , "married" : True ,'allergies':[['sha'] , ['shan']], 'contact_details' : {"phone" : '29383' , 'emial': "shans@38484ns"} }
+p_data_new = {"name" : "shantnu" , "age" : '65' ,'email' : 'shans@hdfc.com', 'linkedin_url' :"https://shan.com/about" , "weight" : 70.34 , "married" : True ,'allergies':[['sha'] , ['shan']], 'contact_details' : {"phone" : '29383' , 'emial': "shans@38484ns" , 'emergency': 'abc'} }
 patient_1 = Patient_hdfc(**p_data_new)  
 insert_values(patient_1)
