@@ -1,4 +1,4 @@
-from pydantic import BaseModel , EmailStr , AnyUrl , Field , field_validator , model_validator
+from pydantic import BaseModel , EmailStr , AnyUrl , Field , field_validator , model_validator , computed_field
 from typing import List , Dict , Optional , Annotated 
 
 # class Patient(BaseModel):
@@ -19,6 +19,9 @@ from typing import List , Dict , Optional , Annotated
 def insert_values(Patient_obj):
     print(Patient_obj.name)
     print(Patient_obj.age)
+    print("BMI" , Patient_obj.bmi)
+    print(Patient_obj.address.city)
+    print(Patient_obj.address.pin)
     print("Object Inserted sucessfully.... ")
     
 
@@ -29,14 +32,21 @@ def insert_values(Patient_obj):
 # Patient_obj = Patient(**p_data)
 
 # insert_values(Patient_obj)
+class Adress(BaseModel):
+    city : str
+    state : str
+    pin : int
 
 class Patient_hdfc(BaseModel):
 
     name : str
     email : EmailStr
+    height : float
+    weight : float
     age : int
     married : bool
     allergies : List[List]
+    address : Adress            # nested 
     contact_details : Dict[str , str]
 
     @field_validator('email')
@@ -73,10 +83,18 @@ class Patient_hdfc(BaseModel):
         else:
             return model
 
+    # Using feilds to calculate some other fields 
+    @computed_field
+    @property
+    def bmi(self)-> float:
+        bmi = round((self.weight / self.height**2) , 5)
+        return bmi
 
-    
-
-
-p_data_new = {"name" : "shantnu" , "age" : '65' ,'email' : 'shans@hdfc.com', 'linkedin_url' :"https://shan.com/about" , "weight" : 70.34 , "married" : True ,'allergies':[['sha'] , ['shan']], 'contact_details' : {"phone" : '29383' , 'emial': "shans@38484ns" , 'emergency': 'abc'} }
-patient_1 = Patient_hdfc(**p_data_new)  
+adress_dict = {'city' : 'Delhi' , 'state' : "Delhi" , 'pin' : '110032'}
+adress_obj = Adress(**adress_dict)
+p_data_new = {"name" : "shantnu" ,"weight":'89.40' , 'height' : '170.18' , "age" : '65' ,'email' : 'shans@hdfc.com', 'linkedin_url' :"https://shan.com/about" , "weight" : 70.34 , "married" : True ,'allergies':[['sha'] , ['shan']], 'contact_details' : {"phone" : '29383' , 'emial': "shans@38484ns" , 'emergency': 'abc'} , 'address' : adress_obj }
+patient_1 = Patient_hdfc(**p_data_new)
+a = patient_1.model_dump(mode= 'python' , include=['name'])  
+# a = patient_1.model_dump(mode= 'python' , include=['name'] , exclude= ['name'])  
+print(a)
 insert_values(patient_1)
