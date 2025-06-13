@@ -35,12 +35,12 @@ class Patient(BaseModel):
             return "Obese"
         
 def get_data():
-    with open("patient.json", "r") as file:
+    with open("Data\patient.json", "r") as file:
         data = json.load(file)
     return data
 
 def save_data(data):
-    with open("patient.json", "w") as file:
+    with open("Data\patient.json", "w") as file:
         json.dump(data , file)
 
 @app.post('/create')
