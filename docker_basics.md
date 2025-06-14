@@ -134,7 +134,6 @@ Docker Desktop includes:
   * View and manage images, containers, volumes, and networks.
   * Internally calls Docker API.
 
----
 
 ## 🧠 Real-World Use Cases of Docker
 
